@@ -1,5 +1,4 @@
-# masters-thesis_airbnb-mist
-Insights of A City Through the Eyes of Airbnb Reviews: Inferring Urban Characteristics from Homestay Guest Experiences
+# Insights of A City Through the Eyes of Airbnb Reviews: Inferring Urban Characteristics from Homestay Guest Experiences
 
 The Jupyter notebooks are the python code that cleans the raw review data retrieved from Inside Airbnb, retains only English reviews, and performs the NLP task.
 
