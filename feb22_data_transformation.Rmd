@@ -1,0 +1,142 @@
+---
+title: "Untitled"
+author: "Jiaxuan"
+date: "2/17/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=F}
+library(tidyverse)
+library(skimr)
+```
+
+# load datasets
+```{r message=F}
+transport <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/transport.csv")
+safety <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/safety.csv")
+noise <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/noise.csv")
+greenery <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/greenery.csv")
+amenities <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/amenities.csv")
+```
+
+```{r}
+my_skim <- skim_with(base = 
+                       sfl(obs = length, iqr = IQR),
+                       numeric = sfl(hist = NULL, p0 = NULL, p25 = NULL,
+                                     p50 = NULL, p75 = NULL, p100 = NULL)
+                    )
+```
+
+```{r}
+#summary_transport <- transport %>% 
+ # group_by(ntaname) %>% 
+  #my_skim(overall_sentiment)
+
+#write_delim(summary_transport, "/Users/jiaxuan/Desktop/1.txt", delim = " ")
+```
+
+
+
+# exclude those with obs.<3
+```{r}
+# transport
+temp <- transport %>% 
+  group_by(ntaname) %>% 
+  summarise(obs = n()) %>%
+  filter(obs>=3)
+
+transport <- transport %>% filter(ntaname %in% temp$ntaname)
+
+# amenities
+temp <- amenities %>% 
+  group_by(ntaname) %>% 
+  summarise(obs = n()) %>%
+  filter(obs>=3)
+
+amenities <- amenities %>% filter(ntaname %in% temp$ntaname)
+
+# greenery
+temp <- greenery %>% 
+  group_by(ntaname) %>% 
+  summarise(obs = n()) %>%
+  filter(obs>=3)
+
+greenery <- greenery %>% filter(ntaname %in% temp$ntaname)
+
+# safety
+temp <- safety %>% 
+  group_by(ntaname) %>% 
+  summarise(obs = n()) %>%
+  filter(obs>=3)
+
+safety <- safety %>% filter(ntaname %in% temp$ntaname)
+
+#noise
+temp <- noise %>% 
+  group_by(ntaname) %>% 
+  summarise(obs = n()) %>%
+  filter(obs>=3)
+
+noise <- noise %>% filter(ntaname %in% temp$ntaname)
+```
+
+
+# group data and calculate avg
+```{r}
+score_transport <- transport %>%
+  group_by(ntaname) %>%
+  summarise(avg_score = mean(overall_sentiment),
+            obs = n())
+
+score_amenities <- amenities %>%
+  group_by(ntaname) %>%
+  summarise(avg_score = mean(overall_sentiment),
+            obs = n())
+
+score_greenery <- greenery %>%
+  group_by(ntaname) %>%
+  summarise(avg_score = mean(overall_sentiment),
+            obs = n())
+
+score_safety <- safety %>%
+  group_by(ntaname) %>%
+  summarise(avg_score = mean(overall_sentiment),
+            obs = n())
+
+score_noise <- noise %>%
+  group_by(ntaname) %>%
+  summarise(avg_score = mean(overall_sentiment),
+            obs = n())
+```
+
+``{r}
+names(safety)[names(safety) == "Sentence I"] <- "Sentence ID"
+names(safety)[names(safety) == "reviewer_i"] <- "reviewer_id"
+names(safety)[names(safety) == "reviewer_n"] <- "reviewer_name"
+names(safety)[names(safety) == "aspect_pai"] <- "aspect_pair"
+names(safety)[names(safety) == "descriptio"] <- "description"
+names(safety)[names(safety) == "overall_se"] <- "overall_sentiment"
+names(safety)[names(safety) == "overall_su"] <- "overall_subjectivity"
+names(safety)[names(safety) == "des_polari"] <- "des_polarity"
+names(safety)[names(safety) == "des_subjec"] <- "des_subjectivity"
+``
+
+
+```{r}
+write_csv(score_transport, "~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_transport.csv")
+
+write_csv(score_amenities, "~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_amenities.csv")
+
+write_csv(score_greenery, "~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_greenery.csv")
+
+write_csv(score_safety, "~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_safety.csv")
+
+write_csv(score_noise, "~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_noise.csv")
+```
+
+
+

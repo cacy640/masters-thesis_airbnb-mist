@@ -1,0 +1,229 @@
+---
+title: "Untitled"
+author: "Jiaxuan"
+date: "2/24/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message = F}
+library(tidyverse)
+library(readxl)
+```
+
+```{r message=F}
+crime <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/MPS Ward Level Crime (most recent 24 months).csv")
+#popn <- read_excel("OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/london/2020_mye_report_workbook.xlsx", 
+#    sheet = "Comparison population Boroughs")
+popn <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/housing-density-ward.csv")
+```
+24 months: 2019/09 - 2021/08
+2020 avg
+2021 avg ward
+```{r}
+total_crime <- crime %>%
+  group_by(LookUp_BoroughName) %>%
+  summarise(crime2019 = sum(Sum2019),
+            crime2020 = sum(Sum2020),
+            crime2021 = sum(Sum2021),
+            total_crime_24months = sum(Sum2019,Sum2020,Sum2021)
+            )
+```
+
+```{r}
+crime2021 <- crime %>%
+  mutate(crime2021 = rowSums(crime[-1:-13])) %>%
+  group_by(WardName) %>%
+  summarise(crime2021_ward = sum(crime2021))
+```
+
+
+```{r}
+write_csv(crime2021, "/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/ward_crime2021.csv")
+```
+
+
+
+```{r}
+popn2021 <- subset(popn, Year == 2021)
+```
+
+```{r}
+total_crime <- left_join(total_crime, popn, by = c("LookUp_BoroughName" = "Borough"))
+```
+A crime rate is calculated by dividing the number of reported crimes by the total population. The result is then multiplied by 100,000
+
+```{r}
+crime2021 <- left_join(crime2021, popn2021, by = c("WardName" = "Ward_Name"))
+
+crime2021 <- crime2021 %>% 
+  group_by(WardName) %>%
+  summarise(crime2021_ward = mean(crime2021_ward),
+            Population = sum(Population)
+            )
+
+crime2021$avg_crime_rate2021 <- 100000 * crime2021$crime2021_ward/crime2021$Population
+```
+
+```{r}
+popn <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/popn_boro.csv")
+total_crime <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/total_crime.csv")
+```
+
+```{r}
+total_crime <- left_join(total_crime, popn, by = c("LookUp_BoroughName" = "Name"))
+```
+
+
+```{r}
+total_crime$avg_crime_rate2021 <- 100000 * total_crime$crime2021/total_crime$Population
+```
+
+```{r}
+write_csv(total_crime, "/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/boro_crime2021.csv")
+```
+
+Singapore passenger volume
+```{r message=FALSE}
+bus01 <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP year 1/y5s2/dep5111/Group project - datasets/transport_node_bus/transport_node_bus_202001.csv")
+bus02 <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP year 1/y5s2/dep5111/Group project - datasets/transport_node_bus/transport_node_bus_202002.csv")
+bus03 <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP year 1/y5s2/dep5111/Group project - datasets/transport_node_bus/transport_node_bus_202003.csv")
+bus04 <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP year 1/y5s2/dep5111/Group project - datasets/transport_node_bus/transport_node_bus_202004.csv")
+bus05 <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP year 1/y5s2/dep5111/Group project - datasets/transport_node_bus/transport_node_bus_202005.csv")
+bus06 <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP year 1/y5s2/dep5111/Group project - datasets/transport_node_bus/transport_node_bus_202006.csv")
+bus07 <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP year 1/y5s2/dep5111/Group project - datasets/transport_node_bus/transport_node_bus_202007.csv")
+bus08 <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP year 1/y5s2/dep5111/Group project - datasets/transport_node_bus/transport_node_bus_202008.csv")
+bus09 <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP year 1/y5s2/dep5111/Group project - datasets/transport_node_bus/transport_node_bus_202009.csv")
+bus10 <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP year 1/y5s2/dep5111/Group project - datasets/transport_node_bus/transport_node_bus_202010.csv")
+bus11 <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP year 1/y5s2/dep5111/Group project - datasets/transport_node_bus/transport_node_bus_202011.csv")
+bus12 <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP year 1/y5s2/dep5111/Group project - datasets/transport_node_bus/transport_node_bus_202012.csv")
+```
+
+```{r}
+df01 <- bus01 %>%
+  group_by(PT_CODE) %>%
+  summarise(tapin = sum(TOTAL_TAP_IN_VOLUME),
+            tapout = sum(TOTAL_TAP_OUT_VOLUME))
+
+df01$month <- 1
+```
+
+```{r}
+df02 <- bus02 %>%
+  group_by(PT_CODE) %>%
+  summarise(tapin = sum(TOTAL_TAP_IN_VOLUME),
+            tapout = sum(TOTAL_TAP_OUT_VOLUME))
+
+df02$month <- 2
+```
+
+```{r}
+df03 <- bus03 %>%
+  group_by(PT_CODE) %>%
+  summarise(tapin = sum(TOTAL_TAP_IN_VOLUME),
+            tapout = sum(TOTAL_TAP_OUT_VOLUME))
+
+df03$month <- 3
+```
+
+```{r}
+df04 <- bus04 %>%
+  group_by(PT_CODE) %>%
+  summarise(tapin = sum(TOTAL_TAP_IN_VOLUME),
+            tapout = sum(TOTAL_TAP_OUT_VOLUME))
+
+df04$month <- 4
+```
+
+```{r}
+df05 <- bus05 %>%
+  group_by(PT_CODE) %>%
+  summarise(tapin = sum(TOTAL_TAP_IN_VOLUME),
+            tapout = sum(TOTAL_TAP_OUT_VOLUME))
+
+df05$month <- 5
+```
+
+```{r}
+df06 <- bus06 %>%
+  group_by(PT_CODE) %>%
+  summarise(tapin = sum(TOTAL_TAP_IN_VOLUME),
+            tapout = sum(TOTAL_TAP_OUT_VOLUME))
+
+df06$month <- 6
+```
+
+```{r}
+df07 <- bus07 %>%
+  group_by(PT_CODE) %>%
+  summarise(tapin = sum(TOTAL_TAP_IN_VOLUME),
+            tapout = sum(TOTAL_TAP_OUT_VOLUME))
+
+df07$month <- 7
+```
+
+```{r}
+df08 <- bus08 %>%
+  group_by(PT_CODE) %>%
+  summarise(tapin = sum(TOTAL_TAP_IN_VOLUME),
+            tapout = sum(TOTAL_TAP_OUT_VOLUME))
+
+df08$month <- 8
+```
+
+```{r}
+df09 <- bus09 %>%
+  group_by(PT_CODE) %>%
+  summarise(tapin = sum(TOTAL_TAP_IN_VOLUME),
+            tapout = sum(TOTAL_TAP_OUT_VOLUME))
+
+df09$month <- 9
+```
+
+```{r}
+df10 <- bus10 %>%
+  group_by(PT_CODE) %>%
+  summarise(tapin = sum(TOTAL_TAP_IN_VOLUME),
+            tapout = sum(TOTAL_TAP_OUT_VOLUME))
+
+df10$month <- 10
+```
+
+```{r}
+df11 <- bus11 %>%
+  group_by(PT_CODE) %>%
+  summarise(tapin = sum(TOTAL_TAP_IN_VOLUME),
+            tapout = sum(TOTAL_TAP_OUT_VOLUME))
+
+df11$month <- 11
+```
+
+```{r}
+df12 <- bus12 %>%
+  group_by(PT_CODE) %>%
+  summarise(tapin = sum(TOTAL_TAP_IN_VOLUME),
+            tapout = sum(TOTAL_TAP_OUT_VOLUME))
+
+df12$month <- 12
+```
+
+
+```{r}
+df2021 <- rbind(df01,df02,df03,df04,df05,df06,df07,df08,df09,df10,df11,df12)
+```
+
+```{r}
+df2021_grouped <- df2021 %>%
+  group_by(PT_CODE) %>%
+  summarise(mean_tapin=mean(tapin), mean_tapout = mean(tapout))
+```
+
+```{r}
+write_csv(df2021_grouped, "/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/avg_passenger_vol_2021.csv")
+```
+
+
+

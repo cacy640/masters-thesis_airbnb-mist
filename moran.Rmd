@@ -1,0 +1,85 @@
+---
+title: "Untitled"
+author: "Jiaxuan"
+date: "2/23/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=F}
+library(raster)
+library(spdep)
+```
+
+```{r}
+transport <- shapefile("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/map_output/2/score_transport.shp")
+greenery <- shapefile("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/map_output/2/score_greenery.shp")
+amenities <- shapefile("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/map_output/2/score_amenities.shp")
+safety <- shapefile("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/map_output/2/score_safety.shp")
+noise <- shapefile("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/map_output/2/score_noise.shp")
+```
+
+#plot(p)
+
+
+``{r}
+w <- poly2nb(p, row.names=p$Id)
+class(w)
+summary(w)
+wm <- nb2mat(w, style='B',zero.policy = TRUE)
+n <- length(p)
+y <- p$avg_score
+ybar <- mean(y)
+dy <- y - ybar
+g <- expand.grid(dy, dy)
+yiyj <- g[,1] * g[,2]
+pm <- matrix(yiyj, ncol=n)
+pmw <- pm * wm
+spmw <- sum(pmw)
+spmw
+smw <- sum(wm)
+sw  <- spmw / smw
+vr <- n / sum(dy^2)
+MI <- vr * sw
+MI
+``
+
+```{r}
+#p$avg_score[p$avg_score==0] <- NA
+#p$avg_score
+```
+
+```{r}
+w <- poly2nb(transport, row.names = transport$OBJECTID)
+```
+
+
+## transport
+```{r}
+moran.test(transport$avg_score, nb2listw(w, style='W', zero.policy = TRUE), na.action = na.omit, zero.policy = TRUE)
+```
+
+## greenery
+```{r}
+moran.test(greenery$avg_score, nb2listw(w, style='W', zero.policy = TRUE), na.action = na.omit, zero.policy = TRUE)
+```
+
+## amenities
+```{r}
+moran.test(amenities$avg_score, nb2listw(w, style='W', zero.policy = TRUE), na.action = na.omit, zero.policy = TRUE)
+```
+
+## safety
+```{r}
+moran.test(safety$avg_score, nb2listw(w, style='W', zero.policy = TRUE), na.action = na.omit, zero.policy = TRUE)
+```
+
+## noise
+```{r}
+moran.test(noise$avg_score, nb2listw(w, style='W', zero.policy = TRUE), na.action = na.omit, zero.policy = TRUE)
+```
+
+

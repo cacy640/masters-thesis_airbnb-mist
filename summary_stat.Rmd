@@ -1,0 +1,32 @@
+---
+title: "Untitled"
+author: "Jiaxuan"
+date: "2/27/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(psych)
+```
+
+```{r message=F}
+score_transport <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/score_transport.csv")
+
+score_amenities <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/score_amenities.csv")
+
+score_greenery <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/score_greenery.csv")
+
+score_safety <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/score_safety.csv")
+
+score_noise <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/score_noise.csv")
+```
+
+```{r}
+describe(score_safety)
+```
+

@@ -1,0 +1,132 @@
+---
+title: "Untitled"
+author: "Jiaxuan"
+date: "2/22/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r message=F}
+library(tidyverse)
+library(broom)
+```
+
+```{r message=F}
+score_transport <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_transport.csv")
+score_amenities <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_amenities.csv")
+score_greenery <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_greenery.csv")
+score_safety <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_safety.csv")
+score_noise <- read_csv("~/OneDrive - National University of Singapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_noise.csv")
+```
+
+# Use Spearman's correlation, as density is not always in normal distribution
+```{r}
+#shapiro.test(df_greenery$density_km)
+```
+
+``{r message=F}
+popn <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/nyc-residents-by-subzone-and-type-of-dwelling-2011-2019/planning-area-subzone-age-group-sex-and-type-of-dwelling-june-2011-2019.csv")
+
+popn$subzone <- toupper(popn$subzone)
+``
+
+
+``{r}
+popn_subzone <- popn %>%
+  filter(year == 2019) %>%
+  group_by(subzone) %>%
+  summarise(population = sum(resident_count)) %>%
+  filter(subzone %in% score_transport$ntaname) %>%
+  arrange(subzone)
+
+c1 <- popn_subzone$population
+``
+
+``{r}
+df_transport <- left_join(score_transport, popn_subzone, by = c("ntaname" = "subzone"))
+
+cor.test(df_transport$avg_score, df_transport$population)
+``
+# transport
+```{r message=F}
+bus <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/bus_stop_density.csv")
+```
+
+``{r}
+bus <- bus %>%
+  group_by(ntaname) %>%
+  summarise(density = max(density))
+``
+
+```{r}
+df_transport <- left_join(score_transport, bus, by = "ntaname")
+cor.test(df_transport$avg_score, df_transport$density, method = "spearman") #, exact=FALSE
+```
+
+# greenery
+```{r message=F}
+tree <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/tree_density.csv")
+```
+
+``{r}
+tree <- tree %>%
+  group_by(ntaname) %>%
+  summarise(density = max(density))
+``
+
+```{r}
+df_greenery <- left_join(score_greenery, tree, by = "ntaname")
+cor.test(df_greenery$avg_score, df_greenery$density, method = "spearman") #, exact=FALSE
+```
+
+# amenities
+```{r message=F}
+poi <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/poi_density.csv")
+```
+
+``{r}
+poi <- poi %>%
+  group_by(ntaname) %>%
+  summarise(density = max(density))
+``
+
+```{r}
+df_amenities <- left_join(score_amenities, poi, by = "ntaname")
+cor.test(df_amenities$avg_score, df_amenities$density, method = "spearman")
+```
+
+
+# safety
+```{r message=F}
+crime <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/crime_nta.csv")
+```
+
+```{r}
+df_safety <- left_join(score_safety, crime, by = "ntaname")
+cor.test(df_safety$avg_score, df_safety$crime_rate, method = "spearman")
+```
+
+
+# noise
+```{r message=F}
+laeq <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/laeq_75.csv")
+```
+
+```{r}
+laeq <- laeq %>%
+  group_by(NAME) %>%
+  summarise(HECTARES = sum(HECTARES),
+            cov_area = sum(cov_area))
+
+laeq$coverage <- laeq$cov_area/(laeq$HECTARES*10000)
+```
+
+```{r}
+df_noise <- left_join(score_noise, laeq, by = "NAME")
+cor.test(df_noise$avg_score, df_noise$coverage, method = "spearman")
+```
+

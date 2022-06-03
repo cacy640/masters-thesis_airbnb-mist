@@ -1,0 +1,946 @@
+---
+title: "mar23_corr_scatter"
+author: "Jiaxuan"
+date: "3/23/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=F}
+library(tidyverse)
+theme_set(theme_classic())
+library(scales)
+library(psych)
+```
+
+# Singapore subzone
+```{r message=F}
+score_transport <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/score_transport.csv")
+score_amenities <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/score_amenities.csv")
+score_greenery <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/score_greenery.csv")
+score_safety <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/score_safety.csv")
+score_noise <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/score_noise.csv")
+```
+
+```{r}
+describe(score_transport)
+```
+
+```{r}
+describe(score_greenery)
+```
+
+```{r}
+describe(score_amenities)
+```
+
+```{r}
+describe(score_safety)
+```
+
+```{r}
+describe(score_noise)
+```
+
+## transport
+```{r message=F}
+bus <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/density_n/bus_stop_density_n.csv")
+```
+
+```{r}
+df_transport <- inner_join(score_transport, bus, by = "SUBZONE_N")
+#df_transport <- df_transport %>% filter(!(SUBZONE_N %in% c("BRAS BASAH", "SINGAPORE GENERAL HOSPITAL")))
+cor.test(df_transport$avg_score, df_transport$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_transport <- df_transport %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_transport <- df_transport %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_transport$score_rank, df_transport$density_rank, method = "spearman")
+```
+
+
+
+```{r}
+df_transport <- df_transport %>% filter(!(SUBZONE_N %in% c("BRAS BASAH", "SINGAPORE GENERAL HOSPITAL")))
+ggplot(data = df_transport)+
+  geom_point(mapping = aes(x = density_n, y = avg_score), na.rm = T) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+  #            formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") + 
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Bus Stop Density (/sqkm per 100,000 people)", y = "Average Sentiment") +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/scatterplot/transport_subzone.png", height = 7, width = 10)
+```
+
+
+
+## greenery
+```{r message=F}
+tree <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/density_n/tree_density_n.csv")
+```
+
+```{r}
+df_greenery <- inner_join(score_greenery, tree, by = "SUBZONE_N")
+cor.test(df_greenery$avg_score, df_greenery$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_greenery <- df_greenery %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_greenery <- df_greenery %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_greenery$score_rank, df_greenery$density_rank, method = "spearman")
+```
+
+```{r}
+ggplot(data = df_greenery)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Tree Density (/sqkm per 100,000 people)", y = "Average Sentiment")  +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/scatterplot/greenery_subzone.png", height = 7, width = 10)
+```
+
+
+
+## amenities
+```{r message=F}
+poi <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/density_n/poi_density_n.csv")
+```
+
+```{r}
+df_amenities <- inner_join(score_amenities, poi, by = "SUBZONE_N")
+cor.test(df_amenities$avg_score, df_amenities$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_amenities <- df_amenities %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_amenities <- df_amenities %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_amenities$score_rank, df_amenities$density_rank, method = "spearman")
+```
+
+```{r}
+df_amenities <- df_amenities %>% filter(!(SUBZONE_N %in% c("KAMPONG GLAM", "BOAT QUAY")))
+ggplot(data = df_amenities)+
+  geom_point(mapping = aes(x = density_n, y = avg_score), na.rm = T) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "POI Density (/sqkm per 100,000 people)", y = "Average Sentiment")  +
+  scale_x_continuous(label = comma) +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/scatterplot/amenities_subzone.png", height = 7, width = 10)
+```
+
+# Singapore PA
+
+```{r message=F}
+score_transport <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/2/score_transport.csv")
+score_amenities <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/2/score_amenities.csv")
+score_greenery <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/2/score_greenery.csv")
+score_safety <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/2/score_safety.csv")
+score_noise <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/csv_output/2/score_noise.csv")
+```
+
+```{r}
+describe(score_transport)
+```
+
+```{r}
+describe(score_greenery)
+```
+
+```{r}
+describe(score_amenities)
+```
+
+```{r}
+describe(score_safety)
+```
+
+```{r}
+describe(score_noise)
+```
+
+## transport
+```{r message=F}
+bus <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/density_n/2/bus_stop_density_n.csv")
+```
+
+```{r}
+df_transport <- inner_join(score_transport, bus, by = "PLN_AREA_N")
+#df_transport <- df_transport %>% filter(PLN_AREA_N !=)
+cor.test(df_transport$avg_score, df_transport$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_transport <- df_transport %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_transport <- df_transport %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_transport$score_rank, df_transport$density_rank, method = "spearman")
+```
+
+```{r}
+ggplot(data = df_transport)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Bus Stop Density (/sqkm per 100,000 people)", y = "Average Sentiment") +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/scatterplot/transport_pa.png", height = 7, width = 10)
+```
+
+
+
+## greenery
+```{r message=F}
+tree <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/density_n/2/tree_density_n.csv")
+```
+
+```{r}
+df_greenery <- inner_join(score_greenery, tree, by = "PLN_AREA_N")
+cor.test(df_greenery$avg_score, df_greenery$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_greenery <- df_greenery %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_greenery <- df_greenery %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_greenery$score_rank, df_greenery$density_rank, method = "spearman")
+```
+
+```{r}
+ggplot(data = df_greenery)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Tree Density (/sqkm per 100,000 people)", y = "Average Sentiment")  +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/scatterplot/greenery_pa.png", height = 7, width = 10)
+```
+
+
+
+## amenities
+```{r message=F}
+poi <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/density_n/2/poi_density_n.csv")
+```
+
+```{r}
+df_amenities <- inner_join(score_amenities, poi, by = "PLN_AREA_N")
+cor.test(df_amenities$avg_score, df_amenities$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_amenities <- df_amenities %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_amenities <- df_amenities %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_amenities$score_rank, df_amenities$density_rank, method = "spearman")
+```
+
+
+```{r}
+ggplot(data = df_amenities)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "POI Density (/sqkm per 100,000 people)", y = "Average Sentiment")  +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/singapore/qgis/scatterplot/amenities_pa.png", height = 7, width = 10)
+```
+
+
+
+
+
+# London boro
+
+```{r message=F}
+score_transport <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/csv_output/score_transport.csv")
+score_amenities <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/csv_output/score_amenities.csv")
+score_greenery <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/csv_output/score_greenery.csv")
+score_safety <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/csv_output/score_safety.csv")
+score_noise <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/csv_output/score_noise.csv")
+```
+
+```{r}
+describe(score_transport)
+```
+
+```{r}
+describe(score_greenery)
+```
+
+```{r}
+describe(score_amenities)
+```
+
+```{r}
+describe(score_safety)
+```
+
+```{r}
+describe(score_noise)
+```
+
+## transport
+```{r message=F}
+bus <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/density_n/bus_stop_density_n.csv")
+```
+
+```{r}
+df_transport <- inner_join(score_transport, bus, by = "NAME")
+#df_transport <- df_transport %>% filter(NAME != "City of London")
+cor.test(df_transport$avg_score, df_transport$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_transport <- df_transport %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_transport <- df_transport %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_transport$score_rank, df_transport$density_rank, method = "spearman")
+```
+
+
+```{r}
+df_transport <- df_transport %>% filter(!(NAME %in% c("City of London")))
+ggplot(data = df_transport)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Bus Stop Density (/sqkm per 100,000 people)", y = "Average Sentiment") +
+  #ylim(0,1) + 
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/scatterplot/transport_boro.png", height = 7, width = 10)
+```
+
+
+
+## greenery
+```{r message=F}
+tree <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/density_n/tree_density_n.csv")
+```
+
+```{r}
+df_greenery <- inner_join(score_greenery, tree, by = "NAME")
+#df_greenery <- df_greenery %>% filter(NAME != "City of London")
+cor.test(df_greenery$avg_score, df_greenery$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_greenery <- df_greenery %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_greenery <- df_greenery %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_greenery$score_rank, df_greenery$density_rank, method = "spearman")
+```
+
+
+```{r}
+df_greenery <- df_greenery %>% filter(!(NAME %in% c("City of London")))
+ggplot(data = df_greenery)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Tree Density (/sqkm per 100,000 people)", y = "Average Sentiment")  +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/scatterplot/greenery_boro.png", height = 7, width = 10)
+```
+
+
+
+## amenities
+```{r message=F}
+poi <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/density_n/poi_density_n.csv")
+```
+
+```{r}
+df_amenities <- inner_join(score_amenities, poi, by = "NAME")
+cor.test(df_amenities$avg_score, df_amenities$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_amenities <- df_amenities %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_amenities <- df_amenities %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_amenities$score_rank, df_amenities$density_rank, method = "spearman")
+```
+
+
+```{r}
+ggplot(data = df_amenities)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "POI Density (/sqkm per 100,000 people)", y = "Average Sentiment")  +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/scatterplot/amenities_boro.png", height = 7, width = 10)
+```
+
+
+## safety
+```{r message=F}
+crime <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/boro_crime2021.csv")
+```
+
+```{r}
+df_safety <- inner_join(score_safety, crime, by = c("NAME" = "LookUp_BoroughName"))
+#df_safety <- df_safety %>% filter(NAME != "Westminster")
+cor.test(df_safety$avg_score, df_safety$avg_crime_rate2021, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_safety <- df_safety %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_safety <- df_safety %>% arrange(desc(avg_crime_rate2021)) %>% mutate(density_rank = row_number())
+cor.test(df_safety$score_rank, df_safety$density_rank, method = "spearman")
+```
+
+
+```{r}
+ggplot(data = df_safety)+
+  geom_point(mapping = aes(x = avg_crime_rate2021, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_rank, y = score_rank), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Crime Rate (per 100,000 people)", y = "Average Sentiment") +
+  #theme(axis.text = element_blank())+
+  theme(axis.text.x = element_text(hjust=1))+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/scatterplot/safety_boro.png", height = 7, width = 10)
+```
+
+
+
+## noise
+```{r message=F}
+laeq <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/boro_75laeq.csv")
+```
+
+```{r}
+laeq <- laeq %>%
+  group_by(NAME) %>%
+  summarise(coverage = sum(`cov_m2/km2`))
+```
+
+```{r}
+df_noise <- inner_join(score_noise, laeq, by = "NAME")
+cor.test(df_noise$avg_score, df_noise$coverage, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_noise <- df_noise %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_noise <- df_noise %>% arrange(desc(coverage)) %>% mutate(density_rank = row_number())
+cor.test(df_noise$score_rank, df_noise$density_rank, method = "spearman")
+```
+
+
+```{r}
+ggplot(data = df_noise)+
+  geom_point(mapping = aes(x = coverage, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_rank, y = score_rank), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Noise Coverage (%)", y = "Average Sentiment") +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/scatterplot/noise_boro.png", height = 7, width = 10)
+```
+
+
+
+
+
+# London ward
+
+```{r message=F}
+score_transport <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/csv_output/2/score_transport.csv")
+score_amenities <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/csv_output/2/score_amenities.csv")
+score_greenery <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/csv_output/2/score_greenery.csv")
+score_safety <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/csv_output/2/score_safety.csv")
+score_noise <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/csv_output/2/score_noise.csv")
+```
+
+```{r}
+describe(score_transport)
+```
+
+```{r}
+describe(score_greenery)
+```
+
+```{r}
+describe(score_amenities)
+```
+
+```{r}
+describe(score_safety)
+```
+
+```{r}
+describe(score_noise)
+```
+
+## transport
+```{r message=F}
+bus <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/density_n/2/bus_stop_density_n.csv")
+```
+
+```{r}
+df_transport <- inner_join(score_transport, bus, by = "NAME")
+cor.test(df_transport$avg_score, df_transport$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_transport <- df_transport %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_transport <- df_transport %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_transport$score_rank, df_transport$density_rank, method = "spearman")
+```
+
+
+```{r}
+ggplot(data = df_transport)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Bus Stop Density (/sqkm per 100,000 people)", y = "Average Sentiment") +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/scatterplot/transport_ward.png", height = 7, width = 10)
+```
+
+
+
+## greenery
+```{r message=F}
+tree <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/density_n/2/tree_density_n.csv")
+```
+
+```{r}
+df_greenery <- inner_join(score_greenery, tree, by = "NAME")
+cor.test(df_greenery$avg_score, df_greenery$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_greenery <- df_greenery %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_greenery <- df_greenery %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_greenery$score_rank, df_greenery$density_rank, method = "spearman")
+```
+
+
+```{r}
+ggplot(data = df_greenery)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Tree Density (/sqkm per 100,000 people)", y = "Average Sentiment")  +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/scatterplot/greenery_ward.png", height = 7, width = 10)
+```
+
+
+
+## amenities
+```{r message=F}
+poi <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/density_n/2/poi_density_n.csv")
+```
+
+```{r}
+df_amenities <- inner_join(score_amenities, poi, by = "NAME")
+cor.test(df_amenities$avg_score, df_amenities$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_amenities <- df_amenities %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_amenities <- df_amenities %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_amenities$score_rank, df_amenities$density_rank, method = "spearman")
+```
+
+
+```{r}
+ggplot(data = df_amenities)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "POI Density (/sqkm per 100,000 people)", y = "Average Sentiment")  +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/scatterplot/amenities_ward.png", height = 7, width = 10)
+```
+
+
+## safety
+```{r message=F}
+crime <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/ward_crime2021.csv")
+```
+
+```{r}
+df_safety <- inner_join(score_safety, crime, by = c("NAME" = "WardName"))
+#df_safety <- df_safety %>% filter(NAME != "West End")
+cor.test(df_safety$avg_score, df_safety$avg_crime_rate2021, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_safety <- df_safety %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_safety <- df_safety %>% arrange(desc(avg_crime_rate2021)) %>% mutate(density_rank = row_number())
+cor.test(df_safety$score_rank, df_safety$density_rank, method = "spearman")
+```
+
+
+```{r}
+df_safety <- df_safety %>%filter(!(NAME %in% c("West End")))
+ggplot(data = df_safety)+
+  geom_point(mapping = aes(x = avg_crime_rate2021, y = avg_score), na.rm = T) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff", na.rm = T) +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Crime Rate (per 100,000 people)", y = "Average Sentiment") +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/scatterplot/safety_ward.png", height = 7, width = 10)
+```
+
+
+
+## noise
+```{r message=F}
+laeq <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/ward_75laeq.csv")
+```
+
+```{r}
+laeq <- laeq %>%
+  group_by(NAME) %>%
+  summarise(coverage = sum(`cov_m2/km2`))
+```
+
+```{r}
+df_noise <- inner_join(score_noise, laeq, by = "NAME")
+cor.test(df_noise$avg_score, df_noise$coverage, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+ggplot(data = df_noise)+
+  geom_point(mapping = aes(x = coverage, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = coverage, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Noise Coverage (%)", y = "Average Sentiment") +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/london/qgis/scatterplot/noise_ward.png", height = 7, width = 10)
+```
+
+
+
+
+# NYC CD
+
+```{r message=F}
+score_transport <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/score_transport.csv")
+score_amenities <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/score_amenities.csv")
+score_greenery <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/score_greenery.csv")
+score_safety <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/score_safety.csv")
+score_noise <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/score_noise.csv")
+```
+
+```{r}
+describe(score_transport)
+```
+
+```{r}
+describe(score_greenery)
+```
+
+```{r}
+describe(score_amenities)
+```
+
+```{r}
+describe(score_safety)
+```
+
+```{r}
+describe(score_noise)
+```
+
+## transport
+```{r message=F}
+bus <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/density_n/bus_stop_density_n.csv")
+```
+
+```{r}
+df_transport <- inner_join(score_transport, bus, by = "boro_cd")
+cor.test(df_transport$avg_score, df_transport$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_transport <- df_transport %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_transport <- df_transport %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_transport$score_rank, df_transport$density_rank, method = "spearman")
+```
+
+
+```{r}
+ggplot(data = df_transport)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Bus Stop Density (/sqkm per 100,000 people)", y = "Average Sentiment") +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/scatterplot/transport_cd.png", height = 7, width = 10)
+```
+
+
+
+## greenery
+```{r message=F}
+tree <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/density_n/tree_density_n.csv")
+```
+
+```{r}
+df_greenery <- inner_join(score_greenery, tree, by = "boro_cd")
+cor.test(df_greenery$avg_score, df_greenery$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_greenery <- df_greenery %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_greenery <- df_greenery %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_greenery$score_rank, df_greenery$density_rank, method = "spearman")
+```
+
+
+```{r}
+ggplot(data = df_greenery)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Tree Density (/sqkm per 100,000 people)", y = "Average Sentiment")  +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/scatterplot/greenery_cd.png", height = 7, width = 10)
+```
+
+
+
+## amenities
+```{r message=F}
+poi <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/density_n/poi_density_n.csv")
+```
+
+```{r}
+df_amenities <- inner_join(score_amenities, poi, by = "boro_cd")
+cor.test(df_amenities$avg_score, df_amenities$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_amenities <- df_amenities %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_amenities <- df_amenities %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_amenities$score_rank, df_amenities$density_rank, method = "spearman")
+```
+
+
+```{r}
+ggplot(data = df_amenities)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "POI Density (/sqkm per 100,000 people)", y = "Average Sentiment")  +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/scatterplot/amenities_cd.png", height = 7, width = 10)
+```
+
+
+## safety
+```{r message=F}
+crime <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/crime_cd.csv")
+```
+
+```{r}
+df_safety <- inner_join(score_safety, crime, by = c("boro_cd"))
+cor.test(df_safety$avg_score, df_safety$crime_rate, method = "spearman",) #, exact=FALSE
+```
+
+```{r}
+df_safety <- df_safety %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_safety <- df_safety %>% arrange(desc(crime_rate)) %>% mutate(density_rank = row_number())
+cor.test(df_safety$score_rank, df_safety$density_rank, method = "spearman")
+```
+
+
+```{r}
+ggplot(data = df_safety)+
+  geom_point(mapping = aes(x = crime_rate, y = avg_score), na.rm = T) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff", na.rm = T) +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Crime Rate (per 100,000 people)", y = "Average Sentiment") +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/scatterplot/safety_cd.png", height = 7, width = 10)
+```
+
+
+
+
+
+
+# NYC NTA
+
+```{r message=F}
+score_transport <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_transport.csv")
+score_amenities <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_amenities.csv")
+score_greenery <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_greenery.csv")
+score_safety <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_safety.csv")
+score_noise <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/score_noise.csv")
+```
+
+```{r}
+describe(score_transport)
+```
+
+```{r}
+describe(score_greenery)
+```
+
+```{r}
+describe(score_amenities)
+```
+
+```{r}
+describe(score_safety)
+```
+
+```{r}
+describe(score_noise)
+```
+
+## transport
+```{r message=F}
+bus <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/density_n/2/bus_syop_density_n.csv")
+```
+
+```{r}
+df_transport <- inner_join(score_transport, bus, by = "ntaname")
+cor.test(df_transport$avg_score, df_transport$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_transport <- df_transport %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_transport <- df_transport %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_transport$score_rank, df_transport$density_rank, method = "spearman")
+```
+
+
+```{r}
+ggplot(data = df_transport)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Bus Stop Density (/sqkm per 100,000 people)", y = "Average Sentiment") +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/scatterplot/transport_nta.png", height = 7, width = 10)
+```
+
+
+
+## greenery
+```{r message=F}
+tree <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/density_n/2/tree_density_n.csv")
+```
+
+```{r}
+df_greenery <- inner_join(score_greenery, tree, by = "ntaname")
+cor.test(df_greenery$avg_score, df_greenery$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_greenery <- df_greenery %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_greenery <- df_greenery %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_greenery$score_rank, df_greenery$density_rank, method = "spearman")
+```
+
+
+```{r}
+ggplot(data = df_greenery)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Tree Density (/sqkm per 100,000 people)", y = "Average Sentiment")  +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/scatterplot/greenery_nta.png", height = 7, width = 10)
+```
+
+
+
+## amenities
+```{r message=F}
+poi <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/density_n/2/poi_density_n.csv")
+```
+
+```{r}
+df_amenities <- inner_join(score_amenities, poi, by = "ntaname")
+cor.test(df_amenities$avg_score, df_amenities$density_n, method = "spearman") #, exact=FALSE
+```
+
+```{r}
+df_amenities <- df_amenities %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_amenities <- df_amenities %>% arrange(desc(density_n)) %>% mutate(density_rank = row_number())
+cor.test(df_amenities$score_rank, df_amenities$density_rank, method = "spearman")
+```
+
+
+```{r}
+ggplot(data = df_amenities)+
+  geom_point(mapping = aes(x = density_n, y = avg_score)) + 
+  #geom_smooth(mapping = aes(x = density_n, y = avg_score), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff") +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "POI Density (/sqkm per 100,000 people)", y = "Average Sentiment")  +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/scatterplot/amenities_nta.png", height = 7, width = 10)
+```
+
+
+## safety
+```{r message=F}
+crime <- read_csv("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/csv_output/2/crime_nta.csv")
+```
+
+```{r}
+crime <- crime %>%
+  group_by(ntaname) %>%
+  summarise(crime2020 = sum(crime_rate))
+```
+
+```{r}
+df_safety <- inner_join(score_safety, crime, by = c("ntaname"))
+#df_safety <- subset(df_safety, ntaname != "park-cemetery-etc-Queens")
+cor.test(df_safety$avg_score, df_safety$crime2020, method = "spearman",) #, exact=FALSE
+```
+
+```{r}
+df_safety <- df_safety %>% arrange(desc(avg_score)) %>% mutate(score_rank = row_number())
+df_safety <- df_safety %>% arrange(desc(crime2020)) %>% mutate(density_rank = row_number())
+cor.test(df_safety$score_rank, df_safety$density_rank, method = "spearman")
+```
+
+
+```{r}
+df_safety <- df_safety %>% filter(ntaname != "park-cemetery-etc-Queens")
+ggplot(data = df_safety)+
+  geom_point(mapping = aes(x = crime2020, y = avg_score), na.rm = T) + 
+  #geom_smooth(mapping = aes(x = density_rank, y = score_rank), 
+              #formula = y~x, method = "loess", color = "salmon", fill = "peachpuff", na.rm = T) +
+  #scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) +
+  labs(x = "Crime Rate (per 100,000 people)", y = "Average Sentiment") +
+  #theme(axis.text = element_blank())+
+  ggsave("/Users/jiaxuan/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/MUP_year2/dissertation/datasets/nyc/qgis/scatterplot/safety_nta.png", height = 7, width = 10)
+```
+
+
+
+
+
+
